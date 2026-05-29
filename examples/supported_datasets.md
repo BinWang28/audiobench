@@ -230,7 +230,7 @@ METRIC=llama3_70b_judge
 
 # == == == == == Music Understanding == == == == ==
 
-DATASET=mu_chomusic_test
+DATASET=muchomusic_test
 METRIC=llama3_70b_judge
 
 # == == == == == ASR Code-Switching == == == == ==
