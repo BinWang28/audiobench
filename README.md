@@ -26,7 +26,7 @@
 
 
 ## 📝 Change log
-* *Mar 2025*: Supported [phi_4_multimodal_instruct](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) model, [gigaspeech 2](https://arxiv.org/abs/2406.11546) evaluation (Thai, Vietenames and Indonesina).
+* *Mar 2025*: Supported [phi_4_multimodal_instruct](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) model, [gigaspeech 2](https://arxiv.org/abs/2406.11546) evaluation (Thai, Vietnamese and Indonesian).
 * *Mar 2025*: Support [MMAU](https://sakshi113.github.io/mmau_homepage/) testset. Multiple-choice questions for speech, audio and music understanding!
 * *Mar 2025*: AudioBench now supports over 50 datasets!!
 * *Mar 2025*: Support SEAME testsets (dev). It is a code-switching dataset for Chinese and Singapore accented English.
@@ -70,6 +70,7 @@
 - [x] [spoken-mqa_long_digit](./examples/supported_datasets.md), Speech Instruction, Metric: `acc`
 - [x] [spoken-mqa_single_step_reasoning](./examples/supported_datasets.md), Speech Instruction, Metric: `acc`
 - [x] [spoken-mqa_multi_step_reasoning](./examples/supported_datasets.md), Speech Instruction, Metric: `acc`
+- [x] [audiollm_instructionfollowing](./IFEval-Audio/README.md), Instruction Following ([IFEval-Audio](./IFEval-Audio/README.md)), Metric: `llama3_70b_judge_combined`
 - [x] [clotho_aqa_test](./examples/supported_datasets.md), Speech Question Answering, Metric: `llama3_70b_judge`, `gpt4o_judge`
 - [x] [wavcaps_qa_test](./examples/supported_datasets.md), Audio Scene Question Answering, Metric: `llama3_70b_judge`, `gpt4o_judge`
 - [x] [audiocaps_qa_test](./examples/supported_datasets.md), Audio Scene Question Answering, Metric: `llama3_70b_judge`, `gpt4o_judge`
@@ -102,7 +103,7 @@
 - [x] [imda_gr_dialogue](./examples/supported_datasets.md), Singlish, Gender Recognition, Metric: `llama3_70b_judge`, `gpt4o_judge`
 - [x] [seame_dev_man](./examples/supported_datasets.md), English-Chinese Code-Switching, Metric: `wer`
 - [x] [seame_dev_sge](./examples/supported_datasets.md), English-Chinese Code-Switching, Metric: `wer`
-- [x] [mmau_mini](./examples/supported_datasets.md), Audio Understandign and Reasoning, Multiple Choice Questions, Metric: `llama3_70b_judge`, `string_match`, `gpt4o_judge`
+- [x] [mmau_mini](./examples/supported_datasets.md), Audio Understanding and Reasoning, Multiple Choice Questions, Metric: `llama3_70b_judge`, `string_match`, `gpt4o_judge`
 - [x] [gigaspeech2_thai](./examples/supported_datasets.md), ASR for Thai language, Metric: `wer`
 - [x] [gigaspeech2_indo](./examples/supported_datasets.md), ASR for Indonesian language, Metric: `wer`
 - [x] [gigaspeech2_viet](./examples/supported_datasets.md), ASR for Vietnamese language, Metric: `wer`
@@ -116,7 +117,7 @@ DATASET=librispeech_test_clean
 METRIC=wer
 ```
 
-### How to Evaluation on Your Dataset?
+### How to Evaluate on Your Dataset?
 Two simple steps:
 1. Make a copy of one of the customized dataset loader. Example: [cn_college_listen_mcq_test](src/dataset_src/cn_college_listen_mcq_test.py). Customize it as your like on your own dataset.
 2. Add a new term in [dataset.py](src/dataset.py).
@@ -130,7 +131,7 @@ Two simple steps:
 - [x] [Qwen-Audio-Chat](./examples/adding_new_model.md)
 - [x] [Qwen2-Audio-7B-Instruct](./examples/adding_new_model.md)
 - [x] [SALMONN_7B](./examples/adding_new_model.md): need extra git clone.
-- [x] [WavLLM_fairseq](./examples/adding_new_model.md): no longer supported as the inference takes too much effort.
+- [ ] [WavLLM_fairseq](./examples/adding_new_model.md): deprecated — inference setup is too involved; the loader is kept for reference.
 - [x] [whisper_large_v3](./examples/adding_new_model.md)
 - [x] [whisper_large_v2](./examples/adding_new_model.md)
 - [x] [gemini-1.5-flash](./examples/adding_new_model.md): key needed
@@ -147,7 +148,7 @@ Two simple steps:
 - [ ] [https://huggingface.co/scb10x/llama3.1-typhoon2-audio-8b-instruct]
 - [ ] [https://huggingface.co/WillHeld/DiVA-llama-3-v0-8b]
 
-### How to evaluation your own models?
+### How to Evaluate Your Own Models?
 As long as the model can do inference, you can load them and inference to get the responses.
 To evaluate on new models, please refer to [adding_new_model](./examples/adding_new_model.md).
 
