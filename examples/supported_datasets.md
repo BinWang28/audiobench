@@ -154,6 +154,10 @@ METRIC=acc
 DATASET=spoken-mqa_multi_step_reasoning
 METRIC=acc
 
+# IFEval-Audio (instruction following). Reports IFR / SCR / OSR.
+DATASET=audiollm_instructionfollowing
+METRIC=llama3_70b_judge_combined
+
 
 # == == == == == Audio Scene Question Answering == == == == ==
 

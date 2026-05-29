@@ -1,4 +1,15 @@
-transformers
+# NOTE on versions:
+# These are unpinned. For a reproducible environment, install and then freeze the
+# exact versions that work on your machine:
+#     pip install -r requirements.txt
+#     pip freeze > requirements.lock.txt
+#
+# `transformers` is the most version-sensitive dependency: Qwen2-Audio requires a
+# recent release (>= 4.45), but some newer releases have regressed audio model
+# behaviour. If Qwen2-Audio misbehaves, pin `transformers` to a known-good version
+# for your setup. See issue #10.
+
+transformers>=4.45
 vllm
 fire
 evaluate
@@ -12,6 +23,5 @@ autoawq
 huggingface-hub
 google-generativeai
 openai
-fire
 librosa
 soundfile
