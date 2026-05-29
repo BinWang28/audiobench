@@ -1,6 +1,7 @@
 # add parent directory to sys.path
 import sys
 sys.path.append('.')
+import importlib
 import logging
 import torch
 
@@ -12,6 +13,35 @@ logging.basicConfig(
     datefmt="%m/%d/%Y %H:%M:%S",
     level=logging.INFO,
 )
+
+
+# =  =  =  =  =  =  =  =  =  =  =  Model Registry  =  =  =  =  =  =  =  =  =  =  =  =  =
+# Maps a public model name (the value passed via --model_name) to the module under
+# model_src/ that implements it. Each module must expose two functions following the
+# naming convention:
+#     <module>_model_loader(self)            -> set up self.model / processor / etc.
+#     <module>_model_generation(self, input) -> return the prediction(s) for one input
+#
+# To add a new model: create model_src/<module>.py with those two functions and add
+# a single line below. The module is imported lazily (only when its model is used),
+# so heavy / optional dependencies are not loaded for other models.
+MODEL_REGISTRY = {
+    "cascade_whisper_large_v3_llama_3_8b_instruct":              "whisper_large_v3_with_llama_3_8b_instruct",
+    "cascade_whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct": "whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct",
+    "Qwen2-Audio-7B-Instruct":                                  "qwen2_audio_7b_instruct",
+    "SALMONN_7B":                                               "salmonn_7b",
+    "WavLLM_fairseq":                                           "wavllm_fairseq",
+    "Qwen-Audio-Chat":                                          "qwen_audio_chat",
+    "MERaLiON-AudioLLM-Whisper-SEA-LION":                       "meralion_audiollm_whisper_sea_lion",
+    "gemini-1.5-flash":                                         "gemini_1_5_flash",
+    "gemini-2-flash":                                           "gemini_2_flash",
+    "whisper_large_v3":                                         "whisper_large_v3",
+    "whisper_large_v2":                                         "whisper_large_v2",
+    "gpt-4o-audio":                                             "gpt_4o_audio",
+    "phi_4_multimodal_instruct":                                "phi_4_multimodal_instruct",
+    "seallms_audio_7b":                                         "seallms_audio_7b",
+}
+
 
 # =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =  =
 class Model(object):
@@ -27,127 +57,20 @@ class Model(object):
         logger.info("= = "*20)
 
 
-    def load_model(self):
-
-        if self.model_name == "cascade_whisper_large_v3_llama_3_8b_instruct": 
-            from model_src.whisper_large_v3_with_llama_3_8b_instruct import whisper_large_v3_with_llama_3_8b_instruct_model_loader
-            whisper_large_v3_with_llama_3_8b_instruct_model_loader(self)
-
-        elif self.model_name == "cascade_whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct":
-            from model_src.whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct import whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct_model_loader
-            whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct_model_loader(self)
-        
-        elif self.model_name == "Qwen2-Audio-7B-Instruct":
-            from model_src.qwen2_audio_7b_instruct import qwen2_audio_7b_instruct_model_loader
-            qwen2_audio_7b_instruct_model_loader(self)
-
-        elif self.model_name == "SALMONN_7B":
-            from model_src.salmonn_7b import salmonn_7b_model_loader
-            salmonn_7b_model_loader(self)
-
-        elif self.model_name == 'WavLLM_fairseq': 
-            from model_src.wavllm_fairseq import wavllm_fairseq_model_loader
-            wavllm_fairseq_model_loader(self)
-
-        elif self.model_name == 'Qwen-Audio-Chat':
-            from model_src.qwen_audio_chat import qwen_audio_chat_model_loader
-            qwen_audio_chat_model_loader(self)
-
-        elif self.model_name == 'MERaLiON-AudioLLM-Whisper-SEA-LION':
-            from model_src.meralion_audiollm_whisper_sea_lion import meralion_audiollm_whisper_sea_lion_model_loader
-            meralion_audiollm_whisper_sea_lion_model_loader(self)
-
-        elif self.model_name == 'gemini-1.5-flash':
-            from model_src.gemini_1_5_flash import gemini_1_5_flash_model_loader
-            gemini_1_5_flash_model_loader(self)
-
-        elif self.model_name == 'gemini-2-flash':
-            from model_src.gemini_2_flash import gemini_2_flash_model_loader
-            gemini_2_flash_model_loader(self)
-
-        elif self.model_name == 'whisper_large_v3':
-            from model_src.whisper_large_v3 import whisper_large_v3_model_loader
-            whisper_large_v3_model_loader(self)
-
-        elif self.model_name == 'whisper_large_v2':
-            from model_src.whisper_large_v2 import whisper_large_v2_model_loader
-            whisper_large_v2_model_loader(self)
-
-        elif self.model_name == 'gpt-4o-audio':
-            from model_src.gpt_4o_audio import gpt_4o_audio_model_loader
-            gpt_4o_audio_model_loader(self)
-
-        elif self.model_name == 'phi_4_multimodal_instruct':
-            from model_src.phi_4_multimodal_instruct import phi_4_multimodal_instruct_model_loader
-            phi_4_multimodal_instruct_model_loader(self)
-
-        elif self.model_name == 'seallms_audio_7b':
-            from model_src.seallms_audio_7b import seallms_audio_7b_model_loader
-            seallms_audio_7b_model_loader(self)
-
-        else:
+    def _resolve(self, suffix):
+        """Return the model_src function named ``<module>_model_<suffix>`` for the
+        current model. ``suffix`` is either 'loader' or 'generation'."""
+        if self.model_name not in MODEL_REGISTRY:
             raise NotImplementedError("Model {} not implemented yet".format(self.model_name))
+        module_name = MODEL_REGISTRY[self.model_name]
+        module = importlib.import_module("model_src.{}".format(module_name))
+        return getattr(module, "{}_model_{}".format(module_name, suffix))
+
+
+    def load_model(self):
+        self._resolve("loader")(self)
 
 
     def generate(self, input):
-
         with torch.no_grad():
-            if self.model_name == "cascade_whisper_large_v3_llama_3_8b_instruct": 
-                from model_src.whisper_large_v3_with_llama_3_8b_instruct import whisper_large_v3_with_llama_3_8b_instruct_model_generation
-                return whisper_large_v3_with_llama_3_8b_instruct_model_generation(self, input)
-            
-            elif self.model_name == "cascade_whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct":
-                from model_src.whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct import whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct_model_generation
-                return whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct_model_generation(self, input)
-            
-            elif self.model_name == "Qwen2-Audio-7B-Instruct":
-                from model_src.qwen2_audio_7b_instruct import qwen2_audio_7b_instruct_model_generation
-                return qwen2_audio_7b_instruct_model_generation(self, input)
-
-            elif self.model_name == "SALMONN_7B":
-                from model_src.salmonn_7b import salmonn_7b_model_generation
-                return salmonn_7b_model_generation(self, input)
-            
-            elif self.model_name == "WavLLM_fairseq":
-                from model_src.wavllm_fairseq import wavllm_fairseq_model_generation
-                return wavllm_fairseq_model_generation(self, input)
-            
-            elif self.model_name == "Qwen-Audio-Chat":
-                from model_src.qwen_audio_chat import qwen_audio_chat_model_generation
-                return qwen_audio_chat_model_generation(self, input)
-            
-            elif self.model_name == "MERaLiON-AudioLLM-Whisper-SEA-LION":
-                from model_src.meralion_audiollm_whisper_sea_lion import meralion_audiollm_whisper_sea_lion_model_generation
-                return meralion_audiollm_whisper_sea_lion_model_generation(self, input)
-            
-            elif self.model_name == "gemini-1.5-flash":
-                from model_src.gemini_1_5_flash import gemini_1_5_flash_model_generation
-                return gemini_1_5_flash_model_generation(self, input)
-
-            elif self.model_name == "gemini-2-flash":
-                from model_src.gemini_2_flash import gemini_2_flash_model_generation
-                return gemini_2_flash_model_generation(self, input)
-
-            elif self.model_name == "whisper_large_v3":
-                from model_src.whisper_large_v3 import whisper_large_v3_model_generation
-                return whisper_large_v3_model_generation(self, input)
-
-            elif self.model_name == "whisper_large_v2":
-                from model_src.whisper_large_v2 import whisper_large_v2_model_generation
-                return whisper_large_v2_model_generation(self, input)
-
-            elif self.model_name == "gpt-4o-audio":
-                from model_src.gpt_4o_audio import gpt_4o_audio_model_generation
-                return gpt_4o_audio_model_generation(self, input)
-
-            elif self.model_name == 'phi_4_multimodal_instruct':
-                from model_src.phi_4_multimodal_instruct import phi_4_multimodal_instruct_model_generation
-                return phi_4_multimodal_instruct_model_generation(self, input)
-
-            elif self.model_name == 'seallms_audio_7b':
-                from model_src.seallms_audio_7b import seallms_audio_7b_model_generation
-                return seallms_audio_7b_model_generation(self, input)
-
-            else:
-                raise NotImplementedError("Model {} not implemented yet".format(self.model_name))
-
+            return self._resolve("generation")(self, input)

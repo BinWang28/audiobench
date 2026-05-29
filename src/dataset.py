@@ -1,3 +1,20 @@
+"""Dataset loading and per-dataset processing for AudioBench.
+
+`Dataset(dataset_name)` does two things:
+  1. load_dataset(): fetch the raw test data. Sources are heterogeneous (different HF
+     repos, occasionally load_from_disk for private data), so this is an explicit
+     dataset_name -> source dispatch rather than a uniform mapping.
+  2. data_format(): pick the matching processor class from dataset_src/<name>.py.
+
+Each dataset_src processor exposes the same contract, used by main_evaluate.py:
+  - prepare_model_input()                          -> list of model inputs
+  - format_model_predictions(inputs, predictions)  -> records (predictions attached)
+  - compute_score(records, metrics)                -> {metric: value, ...}
+
+To add a dataset: add its source under load_dataset(), add a processor under
+dataset_src/, and wire it into data_format().
+"""
+
 import logging
 import os
 

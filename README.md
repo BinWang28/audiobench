@@ -159,6 +159,9 @@ Installation with pip:
 pip install -r requirements.txt
 ```
 
+> New to the codebase? See [ARCHITECTURE.md](./ARCHITECTURE.md) for how the pieces fit
+> together and how to add a new model or dataset.
+
 ## ⏩ Quick Start
 
 For model-as-judge evaluation, we serve the judgement model as a service via `vllm` on port `5000`.
