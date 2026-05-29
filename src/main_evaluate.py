@@ -1,3 +1,20 @@
+"""AudioBench evaluation entry point.
+
+Run via `eval.sh`, which invokes:
+    python src/main_evaluate.py --dataset_name ... --model_name ... --metrics ...
+
+Pipeline for one (dataset, model, metric) triple:
+    1. Dataset(dataset_name)  -> loads the HF data and builds a dataset_processor
+                                 (see dataset.py and dataset_src/<name>.py).
+    2. Model(model_name)      -> loads the model (see model.py and model_src/<name>.py).
+    3. model.generate(...)    -> run inference; predictions cached to
+                                 {file_save_folder}/{model}/{dataset}.json.
+    4. processor.compute_score(..., metrics) -> score (string match, WER/BLEU, or an
+                                 LLM judge); written to ..._{metric}_score.json.
+
+Inference is skipped when a cached prediction file already exists (unless overwrite),
+and the whole step is skipped when the score file already exists.
+"""
 
 import os
 import fire

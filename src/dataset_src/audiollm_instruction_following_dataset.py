@@ -77,7 +77,7 @@ class audiollm_instruction_following_dataset(object):
                 rules.append(rule)
                 rule_targets.append(rule_target)
             
-            from dataset_src.eval_methods.eval_llama3_70b_combined import llama3_70b_as_judge_binary
+            from dataset_src.eval_methods.eval_llama_3_70b_combined import llama3_70b_as_judge_binary
             llama3_70b_judge_results, all_details = llama3_70b_as_judge_binary("meta-llama/Meta-Llama-3-70B-Instruct", [questions, references, predictions, dimensions, rules, rule_targets])
             return {'llama3_70b_judge_combined': llama3_70b_judge_results, 'details': all_details}
         else:
