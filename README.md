@@ -23,26 +23,73 @@
 
 🏠 [AudioBench Leaderboard](https://huggingface.co/spaces/AudioLLMs/AudioBench-Leaderboard-Extend) | 🤗 [Huggingface Datasets](https://huggingface.co/AudioLLMs) | 🤗 [AudioLLM Paper Collection](https://github.com/AudioLLMs/Awesome-Audio-LLM) ![GitHub Repo stars](https://img.shields.io/github/stars/AudioLLMs/Awesome-Audio-LLM?style=social)
 
+AudioBench is a universal benchmark for evaluating audio large language models (AudioLLMs) on speech, audio-scene, and voice understanding tasks across 50+ datasets. New to the codebase? See [ARCHITECTURE.md](./ARCHITECTURE.md) for how the pieces fit together.
+
+## Contents
+- [🔧 Installation](#installation)
+- [⏩ Quick Start](#quick-start)
+- [📊 Supported Datasets](#supported-datasets)
+- [🤖 Supported Models](#supported-models)
+- [➕ Add Your Own Dataset / Model](#add-your-own)
+- [🏆 Leaderboard & Users](#leaderboard)
+- [📝 Change Log](#change-log)
+- [📖 Citation](#citation)
+- [✅ To-Do List](#to-do)
+- [🙌 Contributors](#contributors)
 
 
-## 📝 Change log
-* *Mar 2025*: Supported [phi_4_multimodal_instruct](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) model, [gigaspeech 2](https://arxiv.org/abs/2406.11546) evaluation (Thai, Vietnamese and Indonesian).
-* *Mar 2025*: Support [MMAU](https://sakshi113.github.io/mmau_homepage/) testset. Multiple-choice questions for speech, audio and music understanding!
-* *Mar 2025*: AudioBench now supports over 50 datasets!!
-* *Mar 2025*: Support SEAME testsets (dev). It is a code-switching dataset for Chinese and Singapore accented English.
-* *JAN 2025*: AudioBench paper is accepted to NAACL 2025 Main Conference.
-* *JAN 2025*: Support 10+ [MNSC - Singlish Understanding](https://huggingface.co/datasets/MERaLiON/Multitask-National-Speech-Corpus-v1) datasets, the results are updated on leaderboard.
-* *DEC 2024*: Support more (35) datasets / more Models (2 cascade and 3 fusion models).
-* *SEP 2024*: Add [MuChoMusic](https://arxiv.org/abs/2408.01337) dataset for music evaluation (multiple choice questions).
-* *AUG 2024*: Support a 6 speech translation datasets. Update the evaluation script for several MCQ evaluation.
-* *AUG 2024*: Leaderboard is live. Check it out [here](https://huggingface.co/spaces/AudioLLMs/AudioBench-Leaderboard).
-* *JUL 2024*: We are working hard on the leaderboard and speech translation dataset. Stay tuned!
-* *JUL 2024*: Support all INITIAL 26 datasets listed in AudioBench manuscript.
+<a id="installation"></a>
+## 🔧 Installation
+
+Installation with pip:
+```shell
+pip install -r requirements.txt
+```
 
 
-[![Star History Chart](https://api.star-history.com/svg?repos=AudioLLMs/AudioBench&type=Date)](https://star-history.com/#AudioLLMs/AudioBench&Date)
+<a id="quick-start"></a>
+## ⏩ Quick Start
 
-## Supported Evaluation Data
+For model-as-judge evaluation, we serve the judgement model as a service via `vllm` on port `5000`.
+
+The example is hosting a `Llama-3-70B-Instruct` model and running the cascade `Whisper + Llama-3` model.
+```shell
+# Step 1:
+# Server the judgement model using VLLM framework (my example is using int4 quantized version)
+# This requires with 1 * 80GB GPU
+bash vllm_model_judge_llama_3_70b.sh
+
+# Step 2:
+# We perform model inference and obtain the evaluation results with the second GPU
+GPU=2
+BATCH_SIZE=1
+OVERWRITE=True
+NUMBER_OF_SAMPLES=-1 # indicate all test samples if number_of_samples=-1
+
+MODEL_NAME=Qwen2-Audio-7B-Instruct
+
+DATASET=cn_college_listen_mcq_test
+METRICS=llama3_70b_judge
+
+bash eval.sh $DATASET $MODEL_NAME $GPU $BATCH_SIZE $OVERWRITE $METRICS $NUMBER_OF_SAMPLES
+```
+
+To evaluate on a different dataset, just replace the `DATASET` and `METRIC` names (see the full list below):
+```
+DATASET=librispeech_test_clean
+METRIC=wer
+```
+
+
+<a id="supported-datasets"></a>
+## 📊 Supported Datasets
+
+AudioBench supports 50+ datasets. Full names, metrics, and usage are in
+[examples/supported_datasets.md](./examples/supported_datasets.md).
+
+<details>
+<summary><b>Full dataset list</b> (click to expand)</summary>
+
 - [x] [librispeech_test_clean](./examples/supported_datasets.md), ASR, English, Metric: `wer`
 - [x] [librispeech_test_other](./examples/supported_datasets.md), ASR, English, Metric: `wer`
 - [x] [common_voice_15_en_test](./examples/supported_datasets.md), ASR, English, Metric: `wer`
@@ -111,20 +158,14 @@
 - [ ] [fleurs] speech translation
 - [ ] [AIR-Bench] airbench tasks
 
-How to evaluate with the supported datasets? That's as simple as it can be. Replace the `DATASET` and `METRIC` name.
-```
-DATASET=librispeech_test_clean
-METRIC=wer
-```
-
-### How to Evaluate on Your Dataset?
-Two simple steps:
-1. Make a copy of one of the customized dataset loader. Example: [cn_college_listen_mcq_test](src/dataset_src/cn_college_listen_mcq_test.py). Customize it as your like on your own dataset.
-2. Add a new term in [dataset.py](src/dataset.py).
-3. Done!
+</details>
 
 
-## Supported Models
+<a id="supported-models"></a>
+## 🤖 Supported Models
+
+See [examples/adding_new_model.md](./examples/adding_new_model.md) for setup details.
+
 - [x] [cascade_whisper_large_v3_llama_3_8b_instruct](./examples/adding_new_model.md)
 - [x] [cascade_whisper_large_v2_gemma2_9b_cpt_sea_lionv3_instruct](./examples/adding_new_model.md)
 - [x] [MERaLiON-AudioLLM-Whisper-SEA-LION](./examples/adding_new_model.md)
@@ -148,50 +189,57 @@ Two simple steps:
 - [ ] [https://huggingface.co/scb10x/llama3.1-typhoon2-audio-8b-instruct]
 - [ ] [https://huggingface.co/WillHeld/DiVA-llama-3-v0-8b]
 
-### How to Evaluate Your Own Models?
-As long as the model can do inference, you can load them and inference to get the responses.
-To evaluate on new models, please refer to [adding_new_model](./examples/adding_new_model.md).
+
+<a id="add-your-own"></a>
+## ➕ Add Your Own Dataset / Model
+
+**Your own dataset** — two steps:
+1. Make a copy of one of the customized dataset loaders. Example: [cn_college_listen_mcq_test](src/dataset_src/cn_college_listen_mcq_test.py). Customize it for your own dataset.
+2. Add a new entry in [dataset.py](src/dataset.py).
+
+**Your own model** — as long as the model can do inference, you can load it and generate responses. See [adding_new_model](./examples/adding_new_model.md).
+
+For an overview of how datasets, models, and metrics fit together, see [ARCHITECTURE.md](./ARCHITECTURE.md).
 
 
-## 🔧 Installation
+<a id="leaderboard"></a>
+## 🏆 Leaderboard & Users
 
-Installation with pip:
-```shell
-pip install -r requirements.txt
-```
+🌟 [View the live AudioBench Leaderboard on Hugging Face Spaces](https://huggingface.co/spaces/AudioLLMs/AudioBench-Leaderboard-Extend)
 
-> New to the codebase? See [ARCHITECTURE.md](./ARCHITECTURE.md) for how the pieces fit
-> together and how to add a new model or dataset.
+**To submit your model to the leaderboard**, email: `bwang28c@gmail.com`
 
-## ⏩ Quick Start
-
-For model-as-judge evaluation, we serve the judgement model as a service via `vllm` on port `5000`.
-
-The example is hosting a `Llama-3-70B-Instruct` model and running the cascade `Whisper + Llama-3` model.
-```shell
-# Step 1:
-# Server the judgement model using VLLM framework (my example is using int4 quantized version)
-# This requires with 1 * 80GB GPU
-bash vllm_model_judge_llama_3_70b.sh
-
-# Step 2:
-# We perform model inference and obtain the evaluation results with the second GPU
-GPU=2
-BATCH_SIZE=1
-OVERWRITE=True
-NUMBER_OF_SAMPLES=-1 # indicate all test samples if number_of_samples=-1
-
-MODEL_NAME=Qwen2-Audio-7B-Instruct
-
-DATASET=cn_college_listen_mcq_test
-METRICS=llama3_70b_judge
-
-bash eval.sh $DATASET $MODEL_NAME $GPU $BATCH_SIZE $OVERWRITE $METRICS $NUMBER_OF_SAMPLES
-
-```
+**Researchers, companies or groups that are using AudioBench:**
+- [Llama3-S: When Llama Learns to Listen](https://homebrew.ltd/blog/llama3-just-got-ears)
+- [llms-eval](https://github.com/EvolvingLMMs-Lab/lmms-eval/blob/main/docs/lmms-eval-0.3.md)
+- More to come...
 
 
+<a id="change-log"></a>
+## 📝 Change Log
 
+<details>
+<summary>Expand change log</summary>
+
+* *Mar 2025*: Supported [phi_4_multimodal_instruct](https://huggingface.co/microsoft/Phi-4-multimodal-instruct) model, [gigaspeech 2](https://arxiv.org/abs/2406.11546) evaluation (Thai, Vietnamese and Indonesian).
+* *Mar 2025*: Support [MMAU](https://sakshi113.github.io/mmau_homepage/) testset. Multiple-choice questions for speech, audio and music understanding!
+* *Mar 2025*: AudioBench now supports over 50 datasets!!
+* *Mar 2025*: Support SEAME testsets (dev). It is a code-switching dataset for Chinese and Singapore accented English.
+* *JAN 2025*: AudioBench paper is accepted to NAACL 2025 Main Conference.
+* *JAN 2025*: Support 10+ [MNSC - Singlish Understanding](https://huggingface.co/datasets/MERaLiON/Multitask-National-Speech-Corpus-v1) datasets, the results are updated on leaderboard.
+* *DEC 2024*: Support more (35) datasets / more Models (2 cascade and 3 fusion models).
+* *SEP 2024*: Add [MuChoMusic](https://arxiv.org/abs/2408.01337) dataset for music evaluation (multiple choice questions).
+* *AUG 2024*: Support a 6 speech translation datasets. Update the evaluation script for several MCQ evaluation.
+* *AUG 2024*: Leaderboard is live. Check it out [here](https://huggingface.co/spaces/AudioLLMs/AudioBench-Leaderboard).
+* *JUL 2024*: We are working hard on the leaderboard and speech translation dataset. Stay tuned!
+* *JUL 2024*: Support all INITIAL 26 datasets listed in AudioBench manuscript.
+
+</details>
+
+[![Star History Chart](https://api.star-history.com/svg?repos=AudioLLMs/AudioBench&type=Date)](https://star-history.com/#AudioLLMs/AudioBench&Date)
+
+
+<a id="citation"></a>
 ## 📖 Citation
 If you find our work useful, please consider citing our paper!
 ```bibtex
@@ -203,18 +251,9 @@ If you find our work useful, please consider citing our paper!
 }
 ```
 
-## To submit your model to leaderboard
 
-Email: `bwang28c@gmail.com`
-
-
-#### Researchers, companies or groups that are using AudioBench:
-- [Llama3-S: When Llama Learns to Listen](https://homebrew.ltd/blog/llama3-just-got-ears)
-- [llms-eval] https://github.com/EvolvingLMMs-Lab/lmms-eval/blob/main/docs/lmms-eval-0.3.md
-- More to come...
-
-
-## To-Do List
+<a id="to-do"></a>
+## ✅ To-Do List
 - [ ] Features
   - [ ] Evaluation with audio/speech generation
   - [ ] Evaluation with multiround chatbot
@@ -225,6 +264,6 @@ Email: `bwang28c@gmail.com`
   - [x] Post-processing script for IMDA PART4 which contains code-switching in 4 languages.
 
 
-
-## Contributors
+<a id="contributors"></a>
+## 🙌 Contributors
 - Xue Cong Tey (MMAU-mini Dataset)
