@@ -70,6 +70,7 @@
 - [x] [spoken-mqa_long_digit](./examples/supported_datasets.md), Speech Instruction, Metric: `acc`
 - [x] [spoken-mqa_single_step_reasoning](./examples/supported_datasets.md), Speech Instruction, Metric: `acc`
 - [x] [spoken-mqa_multi_step_reasoning](./examples/supported_datasets.md), Speech Instruction, Metric: `acc`
+- [x] [audiollm_instructionfollowing](./IFEval-Audio/README.md), Instruction Following ([IFEval-Audio](./IFEval-Audio/README.md)), Metric: `llama3_70b_judge_combined`
 - [x] [clotho_aqa_test](./examples/supported_datasets.md), Speech Question Answering, Metric: `llama3_70b_judge`, `gpt4o_judge`
 - [x] [wavcaps_qa_test](./examples/supported_datasets.md), Audio Scene Question Answering, Metric: `llama3_70b_judge`, `gpt4o_judge`
 - [x] [audiocaps_qa_test](./examples/supported_datasets.md), Audio Scene Question Answering, Metric: `llama3_70b_judge`, `gpt4o_judge`

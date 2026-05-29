@@ -1,5 +1,7 @@
 # IFEval-Audio
 
+> Part of the [AudioBench](../README.md) benchmark suite. See the main README for installation, the full dataset list, and how to run evaluations.
+
 ## Overview
 IFEval-Audio is a dataset to evaluate instruction-following in audio-based LLMs, with 280 audio-instruction-answer triples across six dimensions: Content, Capitalization, Symbol, List Structure, Length, and Format.
 
