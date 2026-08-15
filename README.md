@@ -236,7 +236,7 @@ For an overview of how datasets, models, and metrics fit together, see [ARCHITEC
 
 </details>
 
-[![Star History Chart](https://api.star-history.com/svg?repos=AudioLLMs/AudioBench&type=Date)](https://star-history.com/#AudioLLMs/AudioBench&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=AudioLLMs/AudioBench&type=Date)](https://star-history.dera.page/#AudioLLMs/AudioBench&Date)
 
 
 <a id="citation"></a>
